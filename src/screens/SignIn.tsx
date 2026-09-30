@@ -103,7 +103,7 @@ export default function SignIn() {
           </div>
           <p className="text-body-sm text-ink-muted">You need this printed card before your first capture. Print at 100% scale on plain white paper.</p>
           <img src="/reference-card.svg" alt="Reference card preview" className="w-full rounded border border-line bg-white" />
-          <SecondaryButton icon="print" onClick={() => window.open('/reference-card.svg', '_blank', 'noopener')}>
+          <SecondaryButton icon="print" onClick={() => window.open('/print.html', '_blank', 'noopener')}>
             Print reference card
           </SecondaryButton>
         </Card>

@@ -1,7 +1,7 @@
 // Saakshya offline shell. Navigations: network first, fall back to cached shell.
 // Static assets and fonts: cache first. Supabase API/storage: never cached.
-const CACHE = 'saakshya-v1';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/emblem.jpg', '/reference-card.svg', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'saakshya-v2';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/emblem.jpg', '/reference-card.svg', '/print.html', '/icon-192.png', '/icon-512.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', (e) => {

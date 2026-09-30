@@ -95,7 +95,7 @@ export default function Home() {
           <Card className="flex flex-col items-center text-center gap-3">
             <img src="/reference-card.svg" alt="" className="w-48 rounded border border-line" />
             <p className="text-body-md text-ink-secondary">No tests yet. Print the reference card before your first capture.</p>
-            <a href="/reference-card.svg" target="_blank" rel="noopener" className="text-secondary font-medium min-h-12 flex items-center">
+            <a href="/print.html" target="_blank" rel="noopener" className="text-secondary font-medium min-h-12 flex items-center">
               Open reference card
             </a>
           </Card>
