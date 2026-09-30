@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="60mm" viewBox="0 0 100 60">
+  <!-- Saakshya reference card, 100 x 60 mm. Print at 100% scale (no "fit to page").
+       Patch geometry mirrors PATCH_UV in src/colour/sample.ts: each printed patch is the
+       sampled rect plus 1 mm bleed. Reference colours are design-grade representations of
+       documented reactions, not spectrophotometric measurements. After printing, measure
+       the printed swatches and use those values as the reference table. -->
+  <rect width="100" height="60" fill="#FFFFFF" stroke="#000" stroke-width="0.2"/>
+  <!-- 8 mm alignment corners -->
+  <rect x="0" y="0" width="8" height="8" fill="#000"/>
+  <rect x="92" y="0" width="8" height="8" fill="#000"/>
+  <rect x="0" y="52" width="8" height="8" fill="#000"/>
+  <rect x="92" y="52" width="8" height="8" fill="#000"/>
+
+  <g font-family="Helvetica, Arial, sans-serif" font-size="2.4" fill="#333">
+    <text x="13" y="15.5">WHITE</text>
+    <text x="37" y="15.5">GREY</text>
+    <text x="63.5" y="14.3">PLACE STRIP HERE</text>
+    <text x="13" y="52">A</text><text x="23" y="52">O</text><text x="33" y="52">B</text><text x="43" y="52">P</text><text x="53" y="52">K</text>
+    <text x="10" y="4.5" font-size="2.6" font-weight="bold" fill="#000">SAAKSHYA REFERENCE CARD</text>
+    <text x="10" y="57.5" font-size="1.8">Prototype. Design-grade reference colours. Not a laboratory standard.</text>
+  </g>
+
+  <!-- White and grey patches (white = print paper, grey = neutral check patch) -->
+  <rect x="13" y="17" width="24" height="15.2" fill="#FFFFFF" stroke="#999" stroke-width="0.15"/>
+  <rect x="37" y="17" width="24" height="15.2" fill="#9A9A9A"/>
+
+  <!-- Reaction area -->
+  <rect x="63.5" y="15.8" width="31.5" height="26" fill="#FFFFFF" stroke="#000" stroke-width="0.25" stroke-dasharray="1 0.8"/>
+
+  <!-- Reference strip: A O B P K -->
+  <rect x="13" y="36.2" width="10" height="12.8" fill="#E0C877"/>
+  <rect x="23" y="36.2" width="10" height="12.8" fill="#D4631F"/>
+  <rect x="33" y="36.2" width="10" height="12.8" fill="#2D6CB8"/>
+  <rect x="43" y="36.2" width="10" height="12.8" fill="#7B34A6"/>
+  <rect x="53" y="36.2" width="10" height="12.8" fill="#241029"/>
+</svg>
