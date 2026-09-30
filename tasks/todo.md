@@ -12,10 +12,10 @@ Rules R1–R10 in `../docs/RULES.md` are not negotiable.
 
 ### Hour 1 — Scaffold
 - [x] `npm create vite@latest` — React + TypeScript. Add Tailwind, Vitest.
-- [ ] Supabase project. Run the schema from `TRD.md` §8.
-- [ ] Seed the `reagents` table with Marquis, Mecke, Scott reference patches.
-- [ ] Create the `test-images` storage bucket.
-- [ ] Routing skeleton, all nine P0 screens reachable as stubs.
+- [x] Supabase project. Run the schema from `TRD.md` §8.
+- [x] Seed the `reagents` table with Marquis, Mecke, Scott reference patches.
+- [x] Create the `test-images` storage bucket.
+- [x] Routing skeleton, all nine P0 screens reachable as stubs.
 - [x] `public/reference-card.svg` per `TRD.md` §3.
 - **Done when:** `npm run dev` shows every screen and they navigate.
 
@@ -34,16 +34,16 @@ Rules R1–R10 in `../docs/RULES.md` are not negotiable.
 - **Done when:** all colour tests green.
 
 ### Hour 3 — Capture
-- [ ] `getUserMedia` viewfinder, rear camera, request manual white balance where supported.
-- [ ] `AlignmentGuide` — four corner brackets, 100:60, green/amber.
+- [x] `getUserMedia` viewfinder (needs real-phone check), rear camera, request manual white balance where supported.
+- [x] `AlignmentGuide` — four corner brackets, 100:60, green/amber.
 - [x] `src/colour/sample.ts` — median of a 20×20 region at each `PATCH_UV` position.
-- [ ] Live lighting gate: clipped / underexposed / colour cast. Shutter disabled while invalid.
+- [x] Live lighting gate: clipped / underexposed / colour cast. Shutter disabled while invalid.
 - **Done when:** photographing the printed card logs correct patch RGBs.
 
 ### Hour 4 — Capture → Result
-- [ ] Wire capture → sample → white balance → Lab → classify.
-- [ ] Result screen: verdict banner, `SwatchCompare`, ΔE, runner-up, meta grid.
-- [ ] Inconclusive variant with its reason spelled out.
+- [x] Wire capture → sample → white balance → Lab → classify.
+- [x] Result screen: verdict banner, `SwatchCompare`, ΔE, runner-up, meta grid.
+- [x] Inconclusive variant with its reason spelled out.
 - **Done when:** photographing a printed purple swatch shows POSITIVE with a real ΔE.
 
 ### Hour 5 — Sealing (tests first)
@@ -68,19 +68,19 @@ Rules R1–R10 in `../docs/RULES.md` are not negotiable.
 - [x] `src/data/queue.ts` — IndexedDB queue, `sync_state: pending`.
 - [x] `src/data/sync.ts` — drain on `navigator.onLine` and the `online` event.
 - [x] Sync uploads image to Storage, inserts the record. **Recomputes nothing** (R3).
-- [ ] `OfflineBadge` when the queue is non-empty.
+- [x] `OfflineBadge` when the queue is non-empty.
 - **Done when:** a sealed record appears in Supabase and still verifies after syncing.
 
 ### Hour 7 — Record and verification
-- [ ] Record detail screen: provenance grid, `HashText`, `ChainView`.
-- [ ] Verification screen: four `CheckRow`s, staggered reveal, per-check results.
-- [ ] Failure state names exactly what changed (R8 — red only here).
+- [x] Record detail screen: provenance grid, `HashText`, `ChainView`.
+- [x] Verification screen: four `CheckRow`s, staggered reveal, per-check results.
+- [x] Failure state names exactly what changed (R8 — red only here).
 - **Done when:** Verify on a clean record shows four green checks.
 
 ### Hour 8 — Log and tamper demo
-- [ ] Log screen: search, filter chips, rows with verdict chips and queue icons.
-- [ ] Empty and no-results states.
-- [ ] Dev-only tamper button (`import.meta.env.DEV`) that flips one byte of the stored image.
+- [x] Log screen: search, filter chips, rows with verdict chips and queue icons.
+- [x] Empty and no-results states.
+- [x] Dev-only tamper button (`import.meta.env.DEV`) that flips one byte of the stored image.
 - **Done when:** tamper → verify shows check 1 red, checks 2–4 green.
 
 ### Hour 9 — Ship it

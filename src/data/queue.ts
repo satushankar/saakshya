@@ -97,6 +97,15 @@ export async function setSyncState(id: string, sync_state: SyncState, sync_error
   notify();
 }
 
+/** DEV ONLY: edit one payload field of the stored record (appends to case number), for the tamper demo. */
+export async function tamperLocalPayload(id: string): Promise<void> {
+  const d = await db();
+  const cur = await d.get('records', id);
+  if (!cur) return;
+  await d.put('records', { ...cur, record: { ...cur.record, case_number: `${cur.record.case_number}-X` } });
+  notify();
+}
+
 /** DEV ONLY: flip one byte of the locally stored image, for the tamper demo. */
 export async function tamperLocalImage(id: string): Promise<Uint8Array | null> {
   const d = await db();
