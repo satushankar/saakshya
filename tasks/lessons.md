@@ -47,3 +47,7 @@ re-read `docs/RULES.md` R1 and R2.
 ## 2026-09-30 — `vercel link` writes into .env.local
 **What happened:** Linking the Vercel project pulled remote env into `.env.local` (it appended a VERCEL_OIDC_TOKEN). Supabase keys survived, but a pull could have overwritten them.
 **Rule:** Back up `.env.local` before any `vercel link` / `vercel env pull`. Vercel also refuses credential-looking `VITE_` vars unless `--type config` is passed; the Supabase anon key is public by design, so config is correct.
+
+## 2026-09-30 — Vercel blocks deploys by unknown commit authors
+**What happened:** After adding the GitHub remote, `vercel deploy` attached git metadata and the deploy was blocked: the commit author's email was not on the Vercel account.
+**Rule:** Add the commit author's email to the Vercel account (Account Settings → Emails) and connect the repo via the Vercel GitHub App. Until then, deploy a `git archive` snapshot of the pushed commit from a folder without `.git`.
