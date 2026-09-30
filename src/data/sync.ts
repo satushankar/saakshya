@@ -1,7 +1,10 @@
-import { getLocalImage, getProfile, listRecords, setSyncState } from './queue';
+import { hasSession, registerDevice } from './auth';
+import { getLocalImage, listRecords, setSyncState } from './queue';
 import { IMAGE_BUCKET, supabase, toRow } from './supabase';
 
 let running = false;
+
+export const SIGN_IN_REQUIRED = 'Sign in required. Open Settings and sign in to upload.';
 
 const isDuplicate = (msg: string) => /duplicate|already exists|23505/i.test(msg);
 
@@ -13,21 +16,25 @@ export async function drainQueue(): Promise<void> {
   if (!supabase || running || !navigator.onLine) return;
   running = true;
   try {
-    const profile = await getProfile();
     const pending = (await listRecords()).filter((r) => r.sync_state !== 'synced').reverse();
+    if (!pending.length) return;
+    if (!(await hasSession())) {
+      // Sealed records stay safe on the device; they upload once the officer signs in again.
+      for (const { record } of pending) await setSyncState(record.id, 'failed', SIGN_IN_REQUIRED);
+      return;
+    }
+    const registered = new Set<string>();
     for (const { record } of pending) {
       try {
-        if (profile) {
-          await supabase.from('officers').upsert({ id: record.operator_id, name: record.operator_id }, { ignoreDuplicates: true });
-          await supabase
-            .from('devices')
-            .upsert({ id: record.device_id, officer_id: record.operator_id, public_key: record.public_key }, { ignoreDuplicates: true });
+        if (!registered.has(record.device_id)) {
+          await registerDevice(record.device_id, record.public_key, record.operator_id);
+          registered.add(record.device_id);
         }
         const image = await getLocalImage(record.id);
         if (!image) throw new Error('Local image missing');
         const up = await supabase.storage
           .from(IMAGE_BUCKET)
-          .upload(record.image_path, image, { contentType: 'image/jpeg', upsert: false });
+          .upload(record.image_path, image, { contentType: 'image/png', upsert: false });
         if (up.error && !isDuplicate(up.error.message)) throw new Error(`Image upload failed: ${up.error.message}`);
         const ins = await supabase.from('records').insert(toRow(record));
         if (ins.error && !isDuplicate(ins.error.message)) throw new Error(`Record insert failed: ${ins.error.message}`);

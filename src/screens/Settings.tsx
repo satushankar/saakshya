@@ -3,6 +3,8 @@ import { minimumPairwiseDeltaE } from '../colour/classify';
 import { REJECT_RATIO, MARGIN_RATIO } from '../colour/policy';
 import { REFERENCE_SWATCHES, referenceTable } from '../colour/reference';
 import { HashText } from '../components/evidence';
+import { OfficerSignIn } from '../components/OfficerSignIn';
+import { sessionEmail } from '../data/auth';
 import { AppHeader, BottomNav, Card, Label, Page, PrototypeNotice, SecondaryButton, useQueuedCount } from '../components/ui';
 import { supabase } from '../data/supabase';
 import { drainQueue } from '../data/sync';
@@ -16,11 +18,14 @@ export default function Settings() {
   const queued = useQueuedCount();
   const [pub, setPub] = useState<{ key: string; id: string } | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [authErr, setAuthErr] = useState<string | null>(null);
   const table = referenceTable();
   const minPair = minimumPairwiseDeltaE(table);
 
   useEffect(() => {
     void loadOrCreateDeviceKeys().then((k) => setPub({ key: toBase64(k.publicKey), id: k.deviceId }));
+    void sessionEmail().then(setEmail);
   }, []);
 
   return (
@@ -33,6 +38,32 @@ export default function Settings() {
           {pub && <HashText label="Public key (base64)" value={pub.key} />}
           <p className="text-body-sm text-ink-muted">The private key stays in this browser's storage and is never transmitted.</p>
         </Card>
+
+        {supabase && (
+          <Card className="flex flex-col gap-3">
+            <Label>Account</Label>
+            {email ? (
+              <p className="font-mono text-evidentiary-md break-all">Signed in · {email}</p>
+            ) : (
+              <>
+                <p className="text-body-md">Not signed in. Sealed records stay on this device until you sign in.</p>
+                <OfficerSignIn
+                  onSignedIn={(o) => {
+                    if (o.id !== profile?.officer_id) {
+                      void supabase?.auth.signOut();
+                      setAuthErr(`This device is registered to ${profile?.officer_id}. Sign in with that officer's account.`);
+                      return;
+                    }
+                    setAuthErr(null);
+                    void sessionEmail().then(setEmail);
+                    void drainQueue();
+                  }}
+                />
+                {authErr && <p className="text-body-sm text-ink">{authErr}</p>}
+              </>
+            )}
+          </Card>
+        )}
 
         <Card className="flex flex-col gap-3">
           <Label>Sync</Label>
@@ -78,8 +109,8 @@ export default function Settings() {
           <p className="font-mono text-evidentiary-sm">Saakshya prototype v0.1</p>
           <PrototypeNotice />
           <p className="text-body-sm text-ink-muted">
-            Not production security: the prototype cloud database uses permissive access rules. A real deployment needs authenticated
-            officers, per-device write scoping and managed key custody.
+            Cloud access requires a signed-in officer; each officer can read and upload only their own records. Still a prototype: no
+            supervisor roles, and the device key lives in browser storage rather than managed key custody.
           </p>
         </Card>
       </Page>

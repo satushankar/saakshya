@@ -1,5 +1,5 @@
 -- Saakshya prototype schema (TRD §8). Paste into the Supabase SQL editor and run once.
--- RLS POSTURE: permissive anon policies. This is NOT production security.
+-- Initial RLS here is permissive; run 002_auth_rls.sql next to lock access to signed-in officers.
 -- A real deployment needs authenticated officers, per-device write scoping,
 -- and role-gated read access.
 

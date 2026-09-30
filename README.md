@@ -33,9 +33,13 @@ identically everywhere), an expert can recompute every number by hand.
   controlled substances.
 - **The printed card is the ground truth.** Printers differ; measure the printed card once and update
   `src/colour/reference.ts`. The table is print-specific.
-- **Not production security.** The prototype Supabase project uses permissive row-level-security
-  policies with the anon key. A real deployment needs authenticated officers, per-device write
-  scoping, role-gated reads, and managed key custody.
+- **Access control.** The Supabase anon key is public by design (it ships in the browser bundle)
+  and grants nothing on its own. Row-level security (`supabase/002_auth_rls.sql`) requires a
+  signed-in officer: officers read only their own records and images, and can insert only from a
+  device registered to them whose key matches the record's key. Nothing can be updated or deleted.
+  Accounts are provisioned by an administrator; public sign-up is disabled.
+- **Still not production security.** No supervisor role yet, and the device signing key lives in
+  browser storage rather than hardware-backed key custody.
 - Card alignment is manual (guided frame). Automatic card detection is out of scope for v1.
 
 ## Run
@@ -48,7 +52,7 @@ npm test                     # colour + seal unit tests, incl. all 34 Sharma et 
 npm run build && npm run preview
 ```
 
-Supabase setup: run `supabase/schema.sql` once in the SQL editor.
+Supabase setup: run `supabase/schema.sql`, then `supabase/002_auth_rls.sql`, in the SQL editor. Disable public sign-ups and create officer accounts as described at the end of `002_auth_rls.sql`.
 
 Print `public/reference-card.svg` at 100% scale on plain white paper.
 

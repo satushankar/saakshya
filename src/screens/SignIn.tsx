@@ -1,71 +1,83 @@
 import { useState, type FormEvent } from 'react';
+import { OfficerSignIn } from '../components/OfficerSignIn';
 import { ActionBar, Card, Icon, PrimaryButton, PrototypeNotice, SecondaryButton } from '../components/ui';
+import { registerDevice, type Officer } from '../data/auth';
+import { supabase } from '../data/supabase';
+import { toBase64 } from '../seal/hash';
 import { loadOrCreateDeviceKeys } from '../seal/keys';
 import { useApp } from '../state';
 
 const OFFICER_ID = /^[A-Za-z0-9][A-Za-z0-9/-]{2,31}$/;
 
+/** Local-only builds (no cloud configured): officer ID typed on the device. */
+function LocalOfficerForm({ onDone }: { onDone: (id: string) => void }) {
+  const [officerId, setOfficerId] = useState('');
+  const valid = OFFICER_ID.test(officerId.trim());
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (valid) onDone(officerId.trim());
+  };
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-3">
+      <label className="flex flex-col gap-2">
+        <span className="font-mono text-evidentiary-sm uppercase tracking-widest text-ink-secondary font-semibold">Officer ID</span>
+        <input
+          autoFocus
+          value={officerId}
+          onChange={(e) => setOfficerId(e.target.value.toUpperCase())}
+          placeholder="e.g. NCB-4417"
+          autoComplete="off"
+          spellCheck={false}
+          className="h-14 px-4 rounded-xl bg-surface-sunk font-mono text-evidentiary-lg outline-none focus:ring-2 focus:ring-primary/30"
+        />
+      </label>
+      <PrimaryButton type="submit" icon="fingerprint" disabled={!valid}>
+        Register device
+      </PrimaryButton>
+    </form>
+  );
+}
+
 export default function SignIn() {
   const { register } = useApp();
-  const [officerId, setOfficerId] = useState('');
+  const [officerId, setOfficerId] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const valid = OFFICER_ID.test(officerId.trim());
 
-  const onRegister = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!valid) return;
-    setBusy(true);
+  const provision = async (id: string, cloud: boolean) => {
     setErr(null);
     try {
       const keys = await loadOrCreateDeviceKeys();
+      if (cloud) await registerDevice(keys.deviceId, toBase64(keys.publicKey), id);
+      setOfficerId(id);
       setDeviceId(keys.deviceId);
       if ('vibrate' in navigator) navigator.vibrate(40);
-    } catch (e2) {
-      setErr(e2 instanceof Error ? e2.message : 'Could not create the signing key on this device.');
-    } finally {
-      setBusy(false);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Could not register this device.');
     }
   };
 
   return (
-    <form onSubmit={onRegister} className="max-w-xl mx-auto w-full min-h-dvh px-4 pt-8 flex flex-col gap-4 pt-safe">
+    <div className="max-w-xl mx-auto w-full min-h-dvh px-4 pt-8 flex flex-col gap-4 pt-safe">
       <div className="flex flex-col items-center text-center gap-2">
         <img src="/emblem.jpg" alt="Saakshya emblem" className="h-16 w-auto rounded" />
         <h1 className="font-headline text-headline-lg uppercase tracking-wider">Saakshya</h1>
         <span className="text-body-sm text-ink-muted tracking-widest uppercase">साक्ष्य · Field test companion</span>
-        <div className="flex gap-2 px-3 py-1.5 bg-surface rounded-full shadow-sm" aria-hidden>
-          {['bg-blank-amber', 'bg-amphet-orange', 'bg-scott-blue', 'bg-marquis-purple', 'bg-reaction-black'].map((c) => (
-            <span key={c} className={`w-3.5 h-3.5 rounded-full ${c}`} />
-          ))}
-        </div>
       </div>
 
       <div className="flex flex-col gap-1">
         <h2 className="font-headline text-headline-md">Register this device</h2>
-        <p className="text-body-md text-ink-muted">One-time setup. Everything after this is fast.</p>
+        <p className="text-body-md text-ink-muted">
+          One-time setup{supabase ? ', needs network' : ''}. After this, tests can be sealed offline.
+        </p>
       </div>
 
-      <label className="flex flex-col gap-2">
-        <span className="font-mono text-evidentiary-sm uppercase tracking-widest text-ink-secondary font-semibold">Officer ID</span>
-        <div className="flex items-center bg-surface-sunk rounded-xl h-14 px-4 focus-within:ring-2 focus-within:ring-primary/30">
-          <Icon name="badge" className="text-ink-muted mr-3 text-[22px]" />
-          <input
-            autoFocus
-            disabled={!!deviceId}
-            value={officerId}
-            onChange={(e) => setOfficerId(e.target.value.toUpperCase())}
-            placeholder="e.g. NCB-4417"
-            autoComplete="off"
-            spellCheck={false}
-            className="bg-transparent font-mono text-evidentiary-lg tracking-wider w-full outline-none"
-          />
-        </div>
-        {officerId && !valid && (
-          <span className="text-body-sm text-ink-secondary">3–32 characters: letters, digits, “-” or “/”.</span>
-        )}
-      </label>
+      {!deviceId &&
+        (supabase ? (
+          <OfficerSignIn submitLabel="Sign in and register device" onSignedIn={(o: Officer) => void provision(o.id, true)} />
+        ) : (
+          <LocalOfficerForm onDone={(id) => void provision(id, false)} />
+        ))}
 
       <Card className="bg-primary/5 shadow-none flex flex-col gap-2">
         <div className="flex items-center gap-2 text-primary">
@@ -73,11 +85,11 @@ export default function SignIn() {
           <span className="font-headline text-body-md font-semibold">Device signing key</span>
         </div>
         <p className="text-body-md text-ink-secondary">
-          A signing key (Ed25519) will be created on this device. It never leaves the phone. Every test you seal is signed with it.
+          A signing key (Ed25519) is created on this device. It never leaves the phone. Every test you seal is signed with it.
         </p>
         {deviceId && (
           <p className="font-mono text-evidentiary-md">
-            DEVICE ID <span className="font-semibold">{deviceId}</span>
+            {officerId} · DEVICE <span className="font-semibold">{deviceId}</span>
           </p>
         )}
         {err && <p className="text-body-sm text-ink">{err}</p>}
@@ -99,17 +111,13 @@ export default function SignIn() {
 
       <PrototypeNotice />
 
-      <ActionBar>
-        {deviceId ? (
-          <PrimaryButton icon="arrow_forward" onClick={() => void register(officerId.trim())}>
+      {deviceId && officerId && (
+        <ActionBar>
+          <PrimaryButton icon="arrow_forward" onClick={() => void register(officerId)}>
             Continue
           </PrimaryButton>
-        ) : (
-          <PrimaryButton type="submit" icon="fingerprint" disabled={!valid || busy}>
-            {busy ? 'Creating key…' : 'Register device'}
-          </PrimaryButton>
-        )}
-      </ActionBar>
-    </form>
+        </ActionBar>
+      )}
+    </div>
   );
 }
