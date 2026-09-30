@@ -28,3 +28,6 @@ dist-ssr
 .env.*.local
 design/stitch/*.png
 
+.vercel
+.env*
+

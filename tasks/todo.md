@@ -84,8 +84,8 @@ Rules R1–R10 in `../docs/RULES.md` are not negotiable.
 - **Done when:** tamper → verify shows check 1 red, checks 2–4 green.
 
 ### Hour 9 — Ship it
-- [ ] PWA manifest, icons, service worker, offline shell.
-- [ ] Deploy to Vercel. Set Supabase env vars.
+- [x] PWA manifest, icons, service worker, offline shell.
+- [x] Deploy to Vercel (https://saakshya-omega.vercel.app). Set Supabase env vars.
 - [ ] Open the URL on a phone that has never seen the app. Test the full flow.
 - **Done when:** the deployed URL works end to end on a real phone.
 

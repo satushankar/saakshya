@@ -43,3 +43,7 @@ re-read `docs/RULES.md` R1 and R2.
 ## 2026-09-30 — Stored precision must equal hashed precision
 **What happened:** Canonical JSON hashes floats at 4 dp; storing GPS at full precision would leave unsealed digits that could be edited undetected.
 **Rule:** Round every float field to 4 dp before sealing so the stored record is exactly what was hashed.
+
+## 2026-09-30 — `vercel link` writes into .env.local
+**What happened:** Linking the Vercel project pulled remote env into `.env.local` (it appended a VERCEL_OIDC_TOKEN). Supabase keys survived, but a pull could have overwritten them.
+**Rule:** Back up `.env.local` before any `vercel link` / `vercel env pull`. Vercel also refuses credential-looking `VITE_` vars unless `--type config` is passed; the Supabase anon key is public by design, so config is correct.
