@@ -4,6 +4,7 @@ import { CheckRow } from '../components/evidence';
 import { ActionBar, AppHeader, Card, Icon, Page, PrimaryButton, SecondaryButton } from '../components/ui';
 import { verifyFrom, type Source, type VerifyOutcome } from '../data/evidence';
 import { supabase } from '../data/supabase';
+import { useApp } from '../state';
 import { SkeletonRows } from './Home';
 
 const STAGGER_MS = 350;
@@ -11,6 +12,7 @@ const STAGGER_MS = 350;
 export default function Verify() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const { profile } = useApp();
   const [source, setSource] = useState<Source>('device');
   const [out, setOut] = useState<VerifyOutcome | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function Verify() {
     <>
       <AppHeader title="Verification" subtitle={out?.record.case_number ?? id.slice(0, 8)} back={`/record/${id}`} />
       <Page>
-        {supabase && (
+        {supabase && !profile?.local_only && (
           <div className="grid grid-cols-2 gap-1 p-1 bg-surface-sunk rounded-xl" role="tablist">
             {(['device', 'cloud'] as Source[]).map((s) => (
               <button

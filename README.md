@@ -25,6 +25,23 @@ anyone can verify later.
 No computer-vision library and no ML model. Given the same photograph (stored as PNG so it decodes
 identically everywhere), an expert can recompute every number by hand.
 
+## Reviewer access
+
+Open **https://saakshya-omega.vercel.app** on a phone. The first screen offers two ways in, so no
+credentials have to be arranged in advance:
+
+- **Sign in as demo officer** — a shared evaluation account whose email and password are printed on
+  the screen. Full flow including upload and cloud verification.
+- **Try on this device only** — no account at all. Tests seal and verify normally but stay on the
+  device and are never uploaded.
+
+Those demo credentials are public on purpose. Row-level security still applies: that officer can read
+and insert only its own records, and nothing can be updated or deleted.
+
+To take a real reading you need the printed card: **https://saakshya-omega.vercel.app/print.html**,
+printed at 100% scale with background graphics on. The sheet includes cut-out colour swatches that
+stand in for reacted test strips, each labelled with the verdict the classifier should return.
+
 ## Honest limits
 
 - **Presumptive only.** This does not replace laboratory confirmatory testing.

@@ -1,5 +1,5 @@
 import { hasSession, registerDevice } from './auth';
-import { getLocalImage, listRecords, setSyncState } from './queue';
+import { getLocalImage, getProfile, listRecords, setSyncState } from './queue';
 import { IMAGE_BUCKET, supabase, toRow } from './supabase';
 
 let running = false;
@@ -16,7 +16,9 @@ export async function drainQueue(): Promise<void> {
   if (!supabase || running || !navigator.onLine) return;
   running = true;
   try {
-    const pending = (await listRecords()).filter((r) => r.sync_state !== 'synced').reverse();
+    // Reviewer demo path: there is no account, so nothing is waiting to upload.
+    if ((await getProfile())?.local_only) return;
+    const pending = (await listRecords()).filter((r) => r.sync_state === 'pending' || r.sync_state === 'failed').reverse();
     if (!pending.length) return;
     if (!(await hasSession())) {
       // Sealed records stay safe on the device; they upload once the officer signs in again.

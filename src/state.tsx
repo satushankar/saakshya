@@ -19,7 +19,7 @@ export interface Draft {
 interface AppState {
   profile: Profile | null;
   loading: boolean;
-  register: (officerId: string) => Promise<void>;
+  register: (officerId: string, localOnly?: boolean) => Promise<void>;
   draft: Draft | null;
   setDraft: (d: Draft | null) => void;
 }
@@ -38,8 +38,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const register = async (officer_id: string) => {
-    const p = { officer_id, registered_at: new Date().toISOString() };
+  const register = async (officer_id: string, local_only = false) => {
+    const p: Profile = { officer_id, registered_at: new Date().toISOString(), local_only };
     await saveProfile(p);
     setProfile(p);
   };

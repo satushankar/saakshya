@@ -14,7 +14,8 @@ export const Icon = ({ name, className = '', fill = false }: { name: string; cla
 export function useQueuedCount(): number {
   const [n, setN] = useState(0);
   useEffect(() => {
-    const load = () => void listRecords().then((rs) => setN(rs.filter((r) => r.sync_state !== 'synced').length));
+    // 'local' records are not waiting for anything, so they never show as queued.
+    const load = () => void listRecords().then((rs) => setN(rs.filter((r) => r.sync_state === 'pending' || r.sync_state === 'failed').length));
     load();
     return onQueueChange(load);
   }, []);

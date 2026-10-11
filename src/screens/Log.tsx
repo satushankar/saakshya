@@ -39,7 +39,7 @@ export default function Log() {
       if (reagent !== 'all' && r.reagent !== reagent) return false;
       if (verdict !== 'all' && r.verdict !== verdict) return false;
       if (new Date(r.captured_at).getTime() < minTs) return false;
-      if (sync === 'queued' && sync_state === 'synced') return false;
+      if (sync === 'queued' && sync_state !== 'pending' && sync_state !== 'failed') return false;
       if (sync === 'synced' && sync_state !== 'synced') return false;
       return true;
     });

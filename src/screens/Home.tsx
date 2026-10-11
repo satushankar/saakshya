@@ -29,7 +29,9 @@ export function RecordRow({ r }: { r: LocalRecord }) {
       <div className="flex flex-col items-end gap-1 shrink-0">
         <VerdictChip verdict={rec.verdict} />
         <span className="flex items-center gap-1 font-mono text-evidentiary-sm text-ink-muted">
-          {r.sync_state !== 'synced' && <Icon name={r.sync_state === 'failed' ? 'cloud_sync' : 'cloud_queue'} className="text-[16px]" />}
+          {(r.sync_state === 'pending' || r.sync_state === 'failed') && (
+            <Icon name={r.sync_state === 'failed' ? 'cloud_sync' : 'cloud_queue'} className="text-[16px]" />
+          )}
           {relTime(rec.captured_at)}
         </span>
       </div>

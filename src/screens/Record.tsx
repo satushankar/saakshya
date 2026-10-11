@@ -71,8 +71,20 @@ export default function Record() {
           onClick={() => setSyncInfo((s) => !s)}
           className="flex items-center gap-2 text-body-sm text-ink-secondary min-h-12 text-left"
         >
-          <Icon name={row.sync_state === 'synced' ? 'cloud_done' : row.sync_state === 'failed' ? 'cloud_sync' : 'cloud_queue'} className="text-[20px]" />
-          {row.sync_state === 'synced' ? 'Synced to cloud, unchanged.' : row.sync_state === 'failed' ? 'Sync failed. Tap for details.' : 'Queued. Uploads when online.'}
+          <Icon
+            name={
+              { synced: 'cloud_done', failed: 'cloud_sync', local: 'smartphone', pending: 'cloud_queue' }[row.sync_state]
+            }
+            className="text-[20px]"
+          />
+          {
+            {
+              synced: 'Synced to cloud, unchanged.',
+              failed: 'Sync failed. Tap for details.',
+              local: 'Stored on this device only (demo mode).',
+              pending: 'Queued. Uploads when online.',
+            }[row.sync_state]
+          }
         </button>
         {syncInfo && row.sync_state === 'failed' && (
           <Card className="flex flex-col gap-2">

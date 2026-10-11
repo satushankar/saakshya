@@ -1,7 +1,8 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import { GENESIS_HASH, type TestRecord } from '../seal/types';
 
-export type SyncState = 'pending' | 'synced' | 'failed';
+/** 'local' = sealed in this-device-only demo mode; it was never destined for upload. */
+export type SyncState = 'pending' | 'synced' | 'failed' | 'local';
 
 export interface LocalRecord {
   record: TestRecord;
@@ -12,6 +13,8 @@ export interface LocalRecord {
 export interface Profile {
   officer_id: string;
   registered_at: string;
+  /** Reviewer demo path: no cloud account, so nothing ever syncs. */
+  local_only?: boolean;
 }
 
 interface SaakshyaDB extends DBSchema {
@@ -65,8 +68,10 @@ export async function saveSealed(record: TestRecord, image: Uint8Array): Promise
     tx.abort();
     throw new Error('Chain head changed while sealing. Seal again.');
   }
+  const profile = (await tx.objectStore('meta').get('profile')) as Profile | undefined;
+  const sync_state: SyncState = profile?.local_only ? 'local' : 'pending';
   await Promise.all([
-    tx.objectStore('records').add({ record, sync_state: 'pending', sync_error: null }),
+    tx.objectStore('records').add({ record, sync_state, sync_error: null }),
     tx.objectStore('images').put(image, record.id),
     tx.objectStore('meta').put(record.record_hash, 'chainHead'),
     tx.done,

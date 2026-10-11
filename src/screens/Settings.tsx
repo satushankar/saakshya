@@ -20,6 +20,7 @@ export default function Settings() {
   const [syncing, setSyncing] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [authErr, setAuthErr] = useState<string | null>(null);
+  const localOnly = profile?.local_only === true;
   const table = referenceTable();
   const minPair = minimumPairwiseDeltaE(table);
 
@@ -39,7 +40,19 @@ export default function Settings() {
           <p className="text-body-sm text-ink-muted">The private key stays in this browser's storage and is never transmitted.</p>
         </Card>
 
-        {supabase && (
+        {localOnly && (
+          <Card className="flex flex-col gap-2">
+            <Label>Demo mode</Label>
+            <p className="text-body-md">
+              Running without an account. Tests seal and verify normally, but stay on this device and are never uploaded.
+            </p>
+            <p className="text-body-sm text-ink-muted">
+              To see the cloud round trip, clear this site's data and sign in with the demo account on the first screen.
+            </p>
+          </Card>
+        )}
+
+        {supabase && !localOnly && (
           <Card className="flex flex-col gap-3">
             <Label>Account</Label>
             {email ? (
@@ -65,6 +78,7 @@ export default function Settings() {
           </Card>
         )}
 
+        {!localOnly && (
         <Card className="flex flex-col gap-3">
           <Label>Sync</Label>
           <p className="text-body-md">
@@ -83,6 +97,7 @@ export default function Settings() {
             </SecondaryButton>
           )}
         </Card>
+        )}
 
         <Card className="flex flex-col gap-3">
           <Label>Reference table (read-only)</Label>

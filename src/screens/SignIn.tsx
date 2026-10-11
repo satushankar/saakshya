@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { OfficerSignIn } from '../components/OfficerSignIn';
-import { ActionBar, Card, Icon, PrimaryButton, PrototypeNotice, SecondaryButton } from '../components/ui';
-import { registerDevice, type Officer } from '../data/auth';
+import { ActionBar, Card, Icon, Label, PrimaryButton, PrototypeNotice, SecondaryButton } from '../components/ui';
+import { registerDevice, signInOfficer, type Officer } from '../data/auth';
+import { DEMO_ACCOUNT, LOCAL_DEMO_OFFICER_ID } from '../data/demo';
 import { supabase } from '../data/supabase';
 import { toBase64 } from '../seal/hash';
 import { loadOrCreateDeviceKeys } from '../seal/keys';
@@ -42,6 +43,9 @@ export default function SignIn() {
   const { register } = useApp();
   const [officerId, setOfficerId] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [localOnly, setLocalOnly] = useState(false);
+  const [issuedOpen, setIssuedOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const provision = async (id: string, cloud: boolean) => {
@@ -51,9 +55,24 @@ export default function SignIn() {
       if (cloud) await registerDevice(keys.deviceId, toBase64(keys.publicKey), id);
       setOfficerId(id);
       setDeviceId(keys.deviceId);
+      setLocalOnly(!cloud);
       if ('vibrate' in navigator) navigator.vibrate(40);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Could not register this device.');
+    }
+  };
+
+  /** One tap for a reviewer: sign in with the public demo account, then register this device. */
+  const demoSignIn = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const officer = await signInOfficer(DEMO_ACCOUNT.email, DEMO_ACCOUNT.password);
+      await provision(officer.id, true);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Demo sign-in failed. Use “Try on this device only” instead.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -74,7 +93,47 @@ export default function SignIn() {
 
       {!deviceId &&
         (supabase ? (
-          <OfficerSignIn submitLabel="Sign in and register device" onSignedIn={(o: Officer) => void provision(o.id, true)} />
+          <>
+            <Card className="border-2 border-primary/30 flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-primary">
+                <Icon name="badge" fill className="text-[22px]" />
+                <span className="font-headline text-body-lg font-semibold">Evaluation access</span>
+              </div>
+              <p className="text-body-md text-ink-secondary">
+                Reviewing this prototype? Use the shared demo account below. A field deployment issues an account per officer.
+              </p>
+              <dl className="bg-surface-sunk rounded-xl p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                <dt className="text-label-micro uppercase text-ink-muted pt-1">Email</dt>
+                <dd className="font-mono text-evidentiary-md [overflow-wrap:anywhere]">{DEMO_ACCOUNT.email}</dd>
+                <dt className="text-label-micro uppercase text-ink-muted pt-1">Password</dt>
+                <dd className="font-mono text-evidentiary-md [overflow-wrap:anywhere]">{DEMO_ACCOUNT.password}</dd>
+              </dl>
+              <PrimaryButton icon="login" onClick={() => void demoSignIn()} disabled={busy}>
+                {busy ? 'Signing in…' : 'Sign in as demo officer'}
+              </PrimaryButton>
+              <SecondaryButton icon="smartphone" onClick={() => void provision(LOCAL_DEMO_OFFICER_ID, false)} disabled={busy}>
+                Try on this device only
+              </SecondaryButton>
+              <p className="text-body-sm text-ink-muted">
+                This-device-only needs no account: tests seal and verify normally but are never uploaded.
+              </p>
+            </Card>
+
+            {issuedOpen ? (
+              <Card className="flex flex-col gap-3">
+                <Label>Issued officer account</Label>
+                <OfficerSignIn submitLabel="Sign in and register device" onSignedIn={(o: Officer) => void provision(o.id, true)} />
+              </Card>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIssuedOpen(true)}
+                className="min-h-12 text-body-md text-secondary font-medium self-start"
+              >
+                I have an issued officer account →
+              </button>
+            )}
+          </>
         ) : (
           <LocalOfficerForm onDone={(id) => void provision(id, false)} />
         ))}
@@ -113,7 +172,7 @@ export default function SignIn() {
 
       {deviceId && officerId && (
         <ActionBar>
-          <PrimaryButton icon="arrow_forward" onClick={() => void register(officerId)}>
+          <PrimaryButton icon="arrow_forward" onClick={() => void register(officerId, localOnly)}>
             Continue
           </PrimaryButton>
         </ActionBar>
